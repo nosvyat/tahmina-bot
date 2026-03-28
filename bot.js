@@ -2,7 +2,7 @@ const { Telegraf, Markup } = require('telegraf')
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 
-const WEB_APP_URL = 'https://example.com' // потом заменим
+const WEB_APP_URL = 'https://tahmina-app-production.up.railway.app'
 
 bot.start((ctx) => {
   ctx.reply(
