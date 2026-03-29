@@ -7,9 +7,9 @@ const SURPRISE_URL = 'https://ruletka-tahmina-production.up.railway.app';
 
 function getMainKeyboard() {
   return Markup.keyboard([
-    [Markup.button.webApp('💫 Открыть Вселенную', WEB_APP_URL)],
+    [Markup.button.webApp('💫 Что тебя радует?', WEB_APP_URL)],
     [Markup.button.webApp('🎁 Открыть сюрприз', SURPRISE_URL)],
-    ['💌 Письмо'],
+    ['💌 Письмо от Вселенной'],
   ]).resize();
 }
 
@@ -20,12 +20,12 @@ bot.start(async (ctx) => {
 Это пространство создано только для тебя ✨
 Здесь тебя ждут сюрпризы и немного магии 💖
 
-Нажми «Открыть Вселенную», чтобы перейти в мини-приложение.`,
+Нажми «Открой свою Вселенную», чтобы перейти в мини-приложение.`,
     getMainKeyboard()
   );
 });
 
-bot.hears('💌 Письмо', async (ctx) => {
+bot.hears('💌 Письмо от Вселенной', async (ctx) => {
   await ctx.reply(
     `💌 Письмо для тебя
 
