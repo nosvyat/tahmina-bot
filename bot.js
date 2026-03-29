@@ -3,11 +3,13 @@ const { Telegraf, Markup } = require('telegraf');
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 const WEB_APP_URL = 'https://tahmina-app-production.up.railway.app';
+const SURPRISE_URL = 'https://ruletka-tahmina-production.up.railway.app';
 
 function getMainKeyboard() {
   return Markup.keyboard([
     [Markup.button.webApp('💫 Открыть Вселенную', WEB_APP_URL)],
-    ['🎁 Сюрприз', '💌 Письмо'],
+    [Markup.button.webApp('🎁 Открыть сюрприз', SURPRISE_URL)],
+    ['💌 Письмо'],
   ]).resize();
 }
 
@@ -20,18 +22,6 @@ bot.start(async (ctx) => {
 
 Нажми «Открыть Вселенную», чтобы перейти в мини-приложение.`,
     getMainKeyboard()
-  );
-});
-
-bot.hears('🎁 Сюрприз', async (ctx) => {
-  await ctx.reply(
-    `🎁 Сюрприз
-
-С днём рождения, Тахмина 💫
-Пусть этот день будет наполнен счастьем, теплом и красивыми моментами ✨`,
-    Markup.inlineKeyboard([
-      [Markup.button.callback('⬅️ Назад', 'back_to_main')],
-    ])
   );
 });
 
