@@ -5,48 +5,80 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const WEB_APP_URL = 'https://tahmina-app-production.up.railway.app';
 const SURPRISE_URL = 'https://ruletka-tahmina-production.up.railway.app';
 
+// Храним последнее сообщение бота для каждого чата
+const lastBotMessages = new Map();
+
 function getMainKeyboard() {
   return Markup.keyboard([
     [Markup.button.webApp('💫 Что тебя радует?', WEB_APP_URL)],
     [Markup.button.webApp('🎁 Открыть сюрприз', SURPRISE_URL)],
-    ['💌 Письмо от Вселенной'],
   ]).resize();
 }
 
+// Удалить предыдущее сообщение бота в чате
+async function deleteLastBotMessage(ctx) {
+  const chatId = ctx.chat?.id;
+  if (!chatId) return;
+
+  const lastMessageId = lastBotMessages.get(chatId);
+  if (!lastMessageId) return;
+
+  try {
+    await ctx.telegram.deleteMessage(chatId, lastMessageId);
+  } catch (error) {
+    // Если сообщение уже удалено или удалить нельзя — просто игнорируем
+    console.log('Не удалось удалить предыдущее сообщение:', error.description || error.message);
+  }
+}
+
+// Отправить новое сообщение и сохранить его ID
+async function sendSingleMessage(ctx, text, extra = {}) {
+  await deleteLastBotMessage(ctx);
+
+  const sentMessage = await ctx.reply(text, extra);
+
+  if (ctx.chat?.id && sentMessage?.message_id) {
+    lastBotMessages.set(ctx.chat.id, sentMessage.message_id);
+  }
+
+  return sentMessage;
+}
+
 bot.start(async (ctx) => {
-  await ctx.reply(
+  // По желанию: удаляем сообщение пользователя "/start"
+  try {
+    await ctx.deleteMessage();
+  } catch (error) {
+    console.log('Не удалось удалить сообщение пользователя:', error.description || error.message);
+  }
+
+  await sendSingleMessage(
+    ctx,
     `💫 Добро пожаловать во Вселенную Тахмины
 
 Это пространство создано только для тебя ✨
 Здесь тебя ждут сюрпризы и немного магии 💖
 
-Нажми «Открой свою Вселенную», чтобы перейти в мини-приложение.`,
+Нажми кнопку ниже, чтобы открыть свою Вселенную.`,
     getMainKeyboard()
   );
 });
 
-bot.hears('💌 Письмо от Вселенной', async (ctx) => {
-  await ctx.reply(
-    `💌 Письмо для тебя
+// Если хочешь, можно добавить обработку текста,
+// чтобы бот не спамил и всегда заменял прошлое сообщение
+bot.on('text', async (ctx, next) => {
+  // Игнорируем /start, потому что он уже обработан выше
+  if (ctx.message.text === '/start') return;
 
-Ты особенная 💫
-Пусть всё, о чём ты мечтаешь, обязательно сбудется.
-Пусть рядом будут тепло, забота и любовь ✨`,
-    Markup.inlineKeyboard([
-      [Markup.button.callback('⬅️ Назад', 'back_to_main')],
-    ])
-  );
-});
+  // Если вдруг пользователь пишет руками что-то лишнее,
+  // можно просто удалить его сообщение
+  try {
+    await ctx.deleteMessage();
+  } catch (error) {
+    console.log('Не удалось удалить сообщение пользователя:', error.description || error.message);
+  }
 
-bot.action('back_to_main', async (ctx) => {
-  await ctx.answerCbQuery();
-
-  await ctx.reply(
-    `💫 Добро пожаловать во Вселенную Тахмины
-
-Выбери, с чего хочешь начать ✨`,
-    getMainKeyboard()
-  );
+  return next();
 });
 
 bot.launch();
